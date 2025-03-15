@@ -13,7 +13,7 @@ import com.book.tracker.dto.User;
 import com.book.tracker.service.UserService;
 
 @RestController
-@CrossOrigin("http://127.0.0.1:5500/")
+@CrossOrigin("http://127.0.0.1:5501/")
 public class UserController {
 
 	@Autowired
@@ -21,7 +21,7 @@ public class UserController {
 	
 	@PostMapping("insertUser")
 	public Map<String, String> insertUser(@RequestBody  User u) {
-		Map<String,String> responseData=new HashMap<>();
+		Map<String,String> responseData=new HashMap();
 		try {
 			userService.insertUser(u);
 			responseData.put("msg","ok");
