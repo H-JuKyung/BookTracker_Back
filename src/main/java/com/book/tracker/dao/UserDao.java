@@ -1,46 +1,23 @@
 package com.book.tracker.dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Repository;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.book.tracker.dto.User;
 
-@Repository
-public class UserDao {
+@Mapper
+public interface UserDao {
+
+	public User login(User u) throws Exception;
 	
-	@Value("${spring.datasource.driver-class-name}")
-	private String DB_DRIVER;
+	public void insertUser(User u) throws Exception;
 	
-	@Value("${spring.datasource.url}")
-	private String DB_URL;
+	public void updateUser(User u) throws Exception;
 	
-	@Value("${spring.datasource.username}")
-	private String DB_USER;
+	public void deleteUser(String email) throws Exception;
 	
-	@Value("${spring.datasource.password}")
-	private String DB_PW;
-	
-	public void insertUser(User m) throws Exception {
-		System.out.println("UserDao insertUser() 호출됨"); 
-		
-		Class.forName(DB_DRIVER);
-		Connection con = DriverManager.getConnection(DB_URL, DB_USER , DB_PW);
-		PreparedStatement stmt = con.prepareStatement("insert into user(email, pwd, nickname) values(?, ?, ?)");
-		
-		stmt.setString(1, m.getEmail());
-		stmt.setString(2, m.getPwd());
-		stmt.setString(3, m.getNickname());
-		
-		int i = stmt.executeUpdate();
-		
-		System.out.println(i + "행이 insert됨");
-	}
+    public User useByNickname(@Param("nickname") String nickname);
 }
+
