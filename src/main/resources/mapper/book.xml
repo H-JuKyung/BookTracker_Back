@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.book.tracker.dao.BookDao">  
+
+    <insert id="insertBook" parameterType="Book">
+        INSERT INTO book (title, author, publisher, cover, status)
+        VALUES (#{title}, #{author}, #{publisher}, #{cover}, #{status});
+    </insert>
+
+	<select id ="getAllBooks" resultType="Book">
+	 	select * from book 
+	</select>
+	
+	<select id ="getTitleBook" parameterType ="String" resultType = "Book">
+	select * from book where title =#{title}
+	</select>
+	
+	<select id = "getReadingList" resultType="Book">
+		select * from book where status = '읽고 싶어요' ORDER BY book_id DESC;
+	</select>
+
+</mapper>
