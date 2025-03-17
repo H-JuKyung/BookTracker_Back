@@ -91,10 +91,28 @@ public class BookController {
 //        }
 //    }
     
- // 읽고 싶어요 책 목록 가져오는 메서드 
-    @GetMapping("/reading-list")
-    public List<Book> getReadingList() throws Exception {
-        return bookService.getReadingList();
-    }
+ 
+    // api분류
+//   public List<Book> getBooksByStatus(String status) throws Exception {
+//       return bookService.getBooksByStatus(status);
+//   }
+//    
+   // 읽고 싶어요 책 목록 가져오는 메서드 
+//    @GetMapping("/reading-list")
+//   public List<Book> getReadingList() throws Exception {
+//       return bookService.getBooksByStatus("읽고 싶어요"); 
+//   }
+//    
+//   @GetMapping("/reading-now")
+//   public List<Book> getReadingNow() throws Exception {
+//       return bookService.getBooksByStatus("읽고 있어요");
+//   }
+//
+//   @GetMapping("/reading-done")
+//   public List<Book> getReadingDone() throws Exception {
+//       return bookService.getBooksByStatus("다 읽었어요");
+//   }
+
+    
     
 }
