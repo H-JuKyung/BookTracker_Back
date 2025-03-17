@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -14,6 +15,8 @@ import com.book.tracker.dto.Book;
 @Mapper
 public interface BookDao {
 
+
+	// myBatis와 연결
 	public void insertBook(Book book) throws Exception;
 
 	public List<Book> getAllBooks() throws Exception;
@@ -26,8 +29,17 @@ public interface BookDao {
 	// 읽고 싶어요 책 목록 가져오는 메서드 
 	public List<Book> getReadingList() throws Exception;
 
+	
+	public List<Book> getBooksByEmail(String email) throws Exception;
+	
+	// 이메일별 book_id 자동 증가를 위한 메서드 선언 (SQL은 book.xml에서 처리)
+    Integer getNextBookIdByEmail(String email) throws Exception;
+
+    Book getBookByEmailAndTitle(@Param("email") String email, @Param("title") String title);
+	
+
 
 //public List<Book> getBooksByStatus(String status) throws Exception;
 
-
+	
 }
