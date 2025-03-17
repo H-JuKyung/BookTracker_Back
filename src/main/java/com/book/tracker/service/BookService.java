@@ -28,7 +28,7 @@ public class BookService {
         return bookDao.getTitleBook(title);
     }
 
-    // 책 상태 변경 (읽고 있어요 → 다 읽었어요 등)
+//     책 상태 변경 (읽고 있어요 → 다 읽었어요 등)
 //    public void updateBook(String title)throws Exception {
 //    	System.out.println();
 //        bookDao.updateBook(title);
@@ -48,4 +48,13 @@ public class BookService {
 	public List<Book> getReadingList() throws Exception {
 		return bookDao.getReadingList();
 	}
+
+//public List<Book> getBooksByStatus(String status) throws Exception {
+//		 System.out.println("상태 값 변환 전: " + status);
+//		 List<Book> books = bookDao.getBooksByStatus(status);
+//	        System.out.println("조회된 책 개수: " + books.size()); 
+//		return bookDao.getBooksByStatus(status);
+//		
+//   }
+
 }
