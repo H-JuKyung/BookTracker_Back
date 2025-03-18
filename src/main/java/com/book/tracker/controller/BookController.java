@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import com.book.tracker.dto.Book;
+import com.book.tracker.dto.Login;
 import com.book.tracker.service.BookService;
+import com.book.tracker.service.UserService;
 
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,9 @@ public class BookController {
     
     @Autowired
     private BookService bookService;
+    
+    @Autowired
+    private UserService userService; // authorization 토큰 포함 요청 확인하는거
 
     // 알라딘 API를 활용한 도서 검색 기능
     @GetMapping("/search")
@@ -47,14 +52,50 @@ public class BookController {
 
     // 2) 검색한 책을 DB에 저장하는 기능 (읽고 싶어요)
     @PostMapping("/save")
-    public ResponseEntity<String> saveBook(@RequestBody Book book) {
+    public ResponseEntity<String> saveBook(@RequestHeader String authorization, @RequestBody Book book) {
         try {
+            // 로그인 토큰 검증
+            Login loginInfo = userService.checkToken(authorization);
+            if (loginInfo == null) {
+                return ResponseEntity.status(401).body("Unauthorized: 유효하지 않은 토큰");
+            }
+
+            // 현재 로그인한 사용자의 이메일을 설정
+            book.setEmail(loginInfo.getEmail());
+
+            // 중복 검사 (같은 사용자 + 같은 제목)
+            Book existingBook = bookService.getBookByEmailAndTitle(book.getEmail(), book.getTitle());
+            if (existingBook != null) {
+                return ResponseEntity.status(409).body("이미 담겨 있습니다."); // ✅ 정확한 409 응답 반환
+            }
+
+            // 중복이 아니면 책 추가
             bookService.insertBook(book);
             return ResponseEntity.ok("책이 성공적으로 저장되었습니다.");
+
         } catch (Exception e) {
             return ResponseEntity.status(500).body("책 저장 중 오류 발생: " + e.getMessage());
         }
     }
+
+    
+    @GetMapping("/user-books")
+    public ResponseEntity<List<Book>> getUserBooks(@RequestHeader String authorization) {
+        try {
+            Login loginInfo = userService.checkToken(authorization);
+            
+            if (loginInfo != null) {
+                List<Book> userBooks = bookService.getBooksByEmail(loginInfo.getEmail());
+                return ResponseEntity.ok(userBooks);
+            }
+            
+            return ResponseEntity.status(401).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    
 
     // 3) DB에 저장된 모든 책 조회
     @GetMapping("/list")
@@ -113,6 +154,7 @@ public class BookController {
 //       return bookService.getBooksByStatus("다 읽었어요");
 //   }
 
+    
     
     
 }

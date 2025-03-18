@@ -2,6 +2,8 @@ package com.book.tracker.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.book.tracker.dao.BookDao;
 import com.book.tracker.dto.Book;
 
@@ -11,13 +13,18 @@ import java.util.List;
 public class BookService {
 
     @Autowired
- BookDao bookDao; // DAO 연결
+    BookDao bookDao; // DAO 연결
 
     //  책 추가 (읽고 싶어요 상태로 저장)
+    @Transactional
     public void insertBook(Book book) throws Exception {
+        // Java에서 book_id를 직접 계산
+        Integer nextBookId = bookDao.getNextBookIdByEmail(book.getEmail());
+        book.setBook_id(nextBookId);
+        
+        // book_id를 설정한 후 DB에 저장
         bookDao.insertBook(book);
     }
-
     //  모든 책 조회
     public List<Book> getAllBooks() throws Exception {
         return bookDao.getAllBooks();
@@ -49,6 +56,15 @@ public class BookService {
 		return bookDao.getReadingList();
 	}
 
+	 public List<Book> getBooksByEmail(String email) throws Exception {
+	        return bookDao.getBooksByEmail(email);
+	    }
+	 
+	 public Book getBookByEmailAndTitle(String email, String title) {
+		    return bookDao.getBookByEmailAndTitle(email, title);
+		}
+
+	
 //public List<Book> getBooksByStatus(String status) throws Exception {
 //		 System.out.println("상태 값 변환 전: " + status);
 //		 List<Book> books = bookDao.getBooksByStatus(status);
