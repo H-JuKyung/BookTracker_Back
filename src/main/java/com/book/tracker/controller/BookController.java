@@ -50,7 +50,7 @@ public class BookController {
         return ResponseEntity.ok(response);
     }
 
-    // 2) 검색한 책을 DB에 저장하는 기능 (읽고 싶어요)
+    // 검색한 책을 DB에 저장하는 기능 (읽고 싶어요)
     @PostMapping("/save")
     public ResponseEntity<String> saveBook(@RequestHeader String authorization, @RequestBody Book book) {
         try {
@@ -80,80 +80,118 @@ public class BookController {
 
     
     @GetMapping("/user-books")
-    public ResponseEntity<List<Book>> getUserBooks(@RequestHeader String authorization) {
+    public ResponseEntity<List<Book>> getUserBooks(@RequestHeader String authorization, @RequestParam(required = false) String status) {
         try {
             Login loginInfo = userService.checkToken(authorization);
-            
-            if (loginInfo != null) {
-                List<Book> userBooks = bookService.getBooksByEmail(loginInfo.getEmail());
-                return ResponseEntity.ok(userBooks);
+            if (loginInfo == null) {
+                return ResponseEntity.status(401).build();
             }
-            
-            return ResponseEntity.status(401).build();
+
+            List<Book> books;
+            if (status != null) {
+                books = bookService.getBooksByStatus(loginInfo.getEmail(), status);
+            } else {
+                books = bookService.getBooksByEmail(loginInfo.getEmail());
+            }
+
+            return ResponseEntity.ok(books);
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
         }
     }
 
+
     
 
-    // 3) DB에 저장된 모든 책 조회
+    // DB에 저장된 모든 책 조회
     @GetMapping("/list")
     public List<Book> getAllBooks() throws Exception {
         return bookService.getAllBooks();
     }
 
-    // 4) 특정 책 조회
+    // 특정 책 조회
     @GetMapping("/{title}")
     public Book getTitleBook(@PathVariable String title) throws Exception {
         return bookService.getTitleBook(title);
     }
 
-    // 5) 책 상태 변경 (읽고 있어요, 다 읽었어요 등)
-//    @PutMapping("/{title}/status")
-//    public ResponseEntity<String> updateBookStatus(@PathVariable String title, @RequestBody Map<String, String> request) {
-//        try {
-//            String status = request.get("status");
-//            bookService.updateBook(title); // title을 기준으로 상태 업데이트
-//            return ResponseEntity.ok("책 상태가 업데이트되었습니다.");
-//        } catch (Exception e) {
-//            return ResponseEntity.status(500).body("책 상태 업데이트 중 오류 발생: " + e.getMessage());
-//        }
-//    }
+    @GetMapping("/reading-list")
+    public ResponseEntity<List<Book>> getReadingList(@RequestHeader String authorization) {
+        try {
+            // 로그인된 사용자 확인
+            Login loginInfo = userService.checkToken(authorization);
+            if (loginInfo == null) {
+                return ResponseEntity.status(401).body(null);
+            }
+            // 현재 로그인한 사용자의 `읽고 싶어요` 상태인 책 가져오기
+            return ResponseEntity.ok(bookService.getReadingList(loginInfo.getEmail()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
+    }
 
-    // 6) 책 삭제
-//    @DeleteMapping("/{title}")
-//    public ResponseEntity<String> deleteBook(@PathVariable String title) {
-//        try {
-//            bookService.deleteBook(title);
-//            return ResponseEntity.ok("책이 삭제되었습니다.");
-//        } catch (Exception e) {
-//            return ResponseEntity.status(500).body("책 삭제 중 오류 발생: " + e.getMessage());
-//        }
-//    }
+ // ✅ "읽고 싶어요" 책 목록 가져오기
+    @GetMapping("/want-to-read")
+    public ResponseEntity<List<Book>> getWantToReadBooks(@RequestHeader String authorization) {
+        try {
+            Login loginInfo = userService.checkToken(authorization);
+            if (loginInfo == null) {
+                return ResponseEntity.status(401).body(null);
+            }
+            return ResponseEntity.ok(bookService.getBooksByStatus(loginInfo.getEmail(), "읽고 싶어요"));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    // ✅ "읽고 있어요" 책 목록 가져오기
+    @GetMapping("/reading-now")
+    public ResponseEntity<List<Book>> getReadingNowBooks(@RequestHeader String authorization) {
+        try {
+            Login loginInfo = userService.checkToken(authorization);
+            if (loginInfo == null) {
+                return ResponseEntity.status(401).body(null);
+            }
+            return ResponseEntity.ok(bookService.getBooksByStatus(loginInfo.getEmail(), "읽고 있어요"));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    // "다 읽었어요" 책 목록 가져오기
+    @GetMapping("/reading-done")
+    public ResponseEntity<List<Book>> getReadingDoneBooks(@RequestHeader String authorization) {
+        try {
+            Login loginInfo = userService.checkToken(authorization);
+            if (loginInfo == null) {
+                return ResponseEntity.status(401).body(null);
+            }
+            return ResponseEntity.ok(bookService.getBooksByStatus(loginInfo.getEmail(), "다 읽었어요"));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+ // ✅ 책 상태 변경 (읽고 있어요 / 다 읽었어요)
+    @PutMapping("/update-status")
+    public ResponseEntity<String> updateBookStatus(@RequestHeader String authorization, @RequestBody Book book) {
+        try {
+            Login loginInfo = userService.checkToken(authorization);
+            if (loginInfo == null) {
+                return ResponseEntity.status(401).body("Unauthorized: 유효하지 않은 토큰");
+            }
+
+            // 사용자의 책 상태 업데이트
+            book.setEmail(loginInfo.getEmail());
+            bookService.updateBookStatus(book);
+
+            return ResponseEntity.ok("책 상태가 변경되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("책 상태 업데이트 중 오류 발생: " + e.getMessage());
+        }
+    }
+
     
- 
-    // api분류
-//   public List<Book> getBooksByStatus(String status) throws Exception {
-//       return bookService.getBooksByStatus(status);
-//   }
-//    
-   // 읽고 싶어요 책 목록 가져오는 메서드 
-//    @GetMapping("/reading-list")
-//   public List<Book> getReadingList() throws Exception {
-//       return bookService.getBooksByStatus("읽고 싶어요"); 
-//   }
-//    
-//   @GetMapping("/reading-now")
-//   public List<Book> getReadingNow() throws Exception {
-//       return bookService.getBooksByStatus("읽고 있어요");
-//   }
-//
-//   @GetMapping("/reading-done")
-//   public List<Book> getReadingDone() throws Exception {
-//       return bookService.getBooksByStatus("다 읽었어요");
-//   }
-
     
     
     

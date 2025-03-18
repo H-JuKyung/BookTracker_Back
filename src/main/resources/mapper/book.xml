@@ -25,13 +25,24 @@
 	select * from book where title =#{title}
 	</select>
 	
-<select id="getBooksByStatus" parameterType="string" resultType="Book">
-    select * from book where status = #{status}
-</select>
-
 <select id="getBookByEmailAndTitle" parameterType="map" resultType="Book">
     select * from book where email = #{email} and title = #{title} limit 1
 </select>
+
+<select id="getReadingListByEmail" parameterType="String" resultType="Book">
+    SELECT * FROM book WHERE email = #{email} AND status = '읽고 싶어요'
+</select>
+
+
+<select id="getBooksByStatus" parameterType="map" resultType="Book">
+    select * from book where email = #{email} and status = #{status}
+</select>
+
+<update id="updateBookStatus" parameterType="Book">
+    UPDATE book 
+    SET status = #{status}
+    WHERE email = #{email} AND book_id = #{book_id} 
+</update>
 
 
 

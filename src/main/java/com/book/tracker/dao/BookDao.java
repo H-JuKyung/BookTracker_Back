@@ -36,10 +36,11 @@ public interface BookDao {
     Integer getNextBookIdByEmail(String email) throws Exception;
 
     Book getBookByEmailAndTitle(@Param("email") String email, @Param("title") String title);
+
+	public List<Book> getReadingListByEmail(String email) throws Exception;
+
+	public List<Book> getBooksByStatus(String email, String status) throws Exception;
 	
-
-
-//public List<Book> getBooksByStatus(String status) throws Exception;
-
+	void updateBookStatus(Book book);
 	
 }
