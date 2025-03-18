@@ -35,18 +35,7 @@ public class BookService {
         return bookDao.getTitleBook(title);
     }
 
-//     책 상태 변경 (읽고 있어요 → 다 읽었어요 등)
-//    public void updateBook(String title)throws Exception {
-//    	System.out.println();
-//        bookDao.updateBook(title);
-//    }
-
-    //  책 삭제
-//    public void deleteBook(String title) throws Exception {
-//        bookDao.deleteBook(title);
-//    }
-
-	public Book getBookById(int bookId) {
+	public Book getBookById(int book_id) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -64,13 +53,16 @@ public class BookService {
 		    return bookDao.getBookByEmailAndTitle(email, title);
 		}
 
-	
-//public List<Book> getBooksByStatus(String status) throws Exception {
-//		 System.out.println("상태 값 변환 전: " + status);
-//		 List<Book> books = bookDao.getBooksByStatus(status);
-//	        System.out.println("조회된 책 개수: " + books.size()); 
-//		return bookDao.getBooksByStatus(status);
-//		
-//   }
+	 public List<Book> getReadingList(String email) throws Exception {
+		    return bookDao.getReadingListByEmail(email);
+		}
+
+	 public List<Book> getBooksByStatus(String email, String status) throws Exception {
+		    return bookDao.getBooksByStatus(email, status);
+		}
+	 public void updateBookStatus(Book book) {
+	        bookDao.updateBookStatus(book);
+	    }
+
 
 }
