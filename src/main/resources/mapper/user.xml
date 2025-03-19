@@ -6,11 +6,11 @@
 <mapper namespace="com.book.tracker.dao.UserDao">
 
   <select id="login" resultType="User" parameterType="User" >
-    select * from user where email = #{email} and pwd = #{pwd} 
+    select email, nickname from user where email = #{email} and pwd = #{pwd} 
   </select>
   
   <select id="useByNickname" parameterType="String" resultType="User">
-    select * from user where nickname = #{nickname}
+    select email, nickname from user where nickname = #{nickname}
   </select>
   
   <insert id="insertUser" parameterType="User">
@@ -18,7 +18,7 @@
   </insert>
   
   <update id="updateUser" parameterType="User">
-  	update user set nickname = #{nickname} where email = #{email} and pwd = #{pwd}
+  	update user set nickname = #{nickname}, pwd = #{pwd} where email = #{email}
   </update>
   
   <delete id="deleteUser" parameterType="String">
