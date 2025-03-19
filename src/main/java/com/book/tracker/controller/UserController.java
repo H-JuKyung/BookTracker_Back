@@ -25,18 +25,70 @@ public class UserController {
 	
 	@PostMapping("logout")
 	public void logout(@RequestHeader String authorization) {
-		System.out.println(authorization);
-		try {
-			userService.logout(authorization);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
+        if (authorization == null) {
+            System.out.println("⚠️ 로그아웃 요청 거부 - 토큰 없음");
+            return;
+        }
+
+        try {
+            userService.logout(authorization);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+	}
+
+    // ✅ 사용자의 토큰이 만료되었는지 확인
+	@GetMapping("checkToken")
+	public Map<String, String> checkToken(@RequestHeader String authorization) {
+	    Map<String, String> responseMap = new HashMap<>();
+	    
+        if (authorization == null) {
+            responseMap.put("expired", "true");
+            return responseMap;
+        }    
+	    
+	    try {
+	        Login loginInfo = userService.getLoginInfo(authorization);
+
+	        if (loginInfo != null) {
+	            long currentTime = System.currentTimeMillis();
+	            
+	            // ✅ 만료 시간(exp)이 현재 시간보다 작다면 로그아웃 처리
+	            if (loginInfo.getExp() < currentTime) {
+	                userService.logout(authorization);
+	                responseMap.put("expired", "true"); // 만료됨
+	            } else {
+	            	responseMap.put("expired", "false"); // 유효함
+	            }
+	        } else {
+	        	responseMap.put("expired", "true"); // DB에서 찾을 수 없음 (로그아웃 상태)
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        responseMap.put("expired", "true");
+	    }
+	    return responseMap;
 	}
 	
+    // ✅ 요청할 때마다 exp(만료 시간) 갱신
+    @PostMapping("updateLoginTime")
+    public void updateLoginTime(@RequestHeader String authorization) {
+        if (authorization == null) {
+            System.out.println("⚠️ 로그인 시간 갱신 요청 거부 - 토큰 없음");
+            return;
+        }
+        
+        try {
+            long newExpTime = System.currentTimeMillis() + (1 * 60 * 1000);
+            userService.updateExpTime(authorization, newExpTime);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 	@PostMapping("tokenLogin")
 	public Map<String,String> tokenLogin(@RequestBody User u) {
-		System.out.println(u);
 		
 		Map<String,String> responseMap = new HashMap<>();
 		
@@ -44,6 +96,11 @@ public class UserController {
 			Login loginInfo = userService.tokenLogin(u);
 			
 			if(loginInfo != null && loginInfo.getNickname() != null && loginInfo.getToken() != null) {
+	            // ✅ 현재 시간 + 30분을 만료 시간(exp)으로 설정
+	            long expTime = System.currentTimeMillis() + (1 * 60 * 1000);
+                loginInfo.setExp(expTime);
+                userService.updateExpTime(loginInfo.getToken(), expTime);
+	            
                 responseMap.put("msg", "ok");
 				responseMap.put("nickname", loginInfo.getNickname());
 				responseMap.put("Authorization", loginInfo.getToken());
@@ -51,35 +108,12 @@ public class UserController {
 				responseMap.put("msg", "다시 로그인 해주세요");
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			responseMap.put("msg", "다시 로그인 해주세요");
 		}
 		return responseMap;
 	}
-	
-//	@PostMapping("login")
-//	public Map<String,String> login(@RequestBody User u) {
-//		System.out.println(u);
-//		
-//		Map<String,String> responseMap = new HashMap<>();
-//		
-//		try {
-//			u = userService.login(u);
-//			String nickname = u.getNickname();
-//			if(u != null && nickname != null && !nickname.trim().equals("")) {
-//				responseMap.put("nickname", nickname);
-//			}else {
-//				responseMap.put("msg", "다시 로그인 해주세요");
-//			}
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//			responseMap.put("msg", "다시 로그인 해주세요");
-//		}
-//		return responseMap;
-//	}
-	
+
 	@PostMapping("insertUser")
 	public Map<String,String> insertUser(@RequestBody User u) {
 		System.out.println(u);
@@ -89,7 +123,6 @@ public class UserController {
 			userService.insertUser(u);
 			responseData.put("msg","ok");
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			responseData.put("msg",e.getMessage());
 		}
@@ -104,7 +137,6 @@ public class UserController {
 			userService.updateUser(u);
 			return "ok";
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return "email과 pwd 확인해 주세요";
 		}
@@ -117,7 +149,6 @@ public class UserController {
 			userService.deleteUser(email);
 			return "ok";
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return "email과 pwd 확인해 주세요";
 		}

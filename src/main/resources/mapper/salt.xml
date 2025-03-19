@@ -6,7 +6,8 @@
 <mapper namespace="com.book.tracker.dao.SaltDao">
   
   <insert id="insertSalt" parameterType="SaltInfo">
-  	INSERT INTO saltInfo (email, salt) VALUES (#{email}, #{salt})	
+  	insert into saltInfo (email, salt) values (#{email}, #{salt})
+    on duplicate key update salt = #{salt}  
   </insert>  
   
   <select id="selectSalt" parameterType="String" resultType="SaltInfo">

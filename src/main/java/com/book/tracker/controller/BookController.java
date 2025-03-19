@@ -31,7 +31,7 @@ public class BookController {
     @Autowired
     private UserService userService; // authorization 토큰 포함 요청 확인하는거
 
-    // 알라딘 API를 활용한 도서 검색 기능
+    // ✅ 알라딘 API를 활용한 도서 검색 기능
     @GetMapping("/search")
     public ResponseEntity<String> searchBooks(@RequestParam String keyword) {
         // 알라딘 API 호출 URL 
@@ -50,15 +50,19 @@ public class BookController {
         return ResponseEntity.ok(response);
     }
 
-    // 검색한 책을 DB에 저장하는 기능 (읽고 싶어요)
+    // ✅ 검색한 책을 DB에 저장하는 기능 (읽고 싶어요)
     @PostMapping("/save")
     public ResponseEntity<String> saveBook(@RequestHeader String authorization, @RequestBody Book book) {
         try {
             // 로그인 토큰 검증
-            Login loginInfo = userService.checkToken(authorization);
+            Login loginInfo = userService.getLoginInfo(authorization);
             if (loginInfo == null) {
                 return ResponseEntity.status(401).body("Unauthorized: 유효하지 않은 토큰");
             }
+            
+            // ✅ 만료 시간 갱신 (사용자가 요청할 때마다 갱신)
+            long newExpTime = System.currentTimeMillis() + (30 * 60 * 1000);
+            userService.updateExpTime(authorization, newExpTime);
 
             // 현재 로그인한 사용자의 이메일을 설정
             book.setEmail(loginInfo.getEmail());
@@ -78,14 +82,17 @@ public class BookController {
         }
     }
 
-    
     @GetMapping("/user-books")
     public ResponseEntity<List<Book>> getUserBooks(@RequestHeader String authorization, @RequestParam(required = false) String status) {
         try {
-            Login loginInfo = userService.checkToken(authorization);
+            Login loginInfo = userService.getLoginInfo(authorization);
             if (loginInfo == null) {
                 return ResponseEntity.status(401).build();
             }
+            
+            // ✅ 만료 시간 갱신 (사용자가 요청할 때마다 갱신)
+            long newExpTime = System.currentTimeMillis() + (30 * 60 * 1000);
+            userService.updateExpTime(authorization, newExpTime);
 
             List<Book> books;
             if (status != null) {
@@ -99,17 +106,14 @@ public class BookController {
             return ResponseEntity.status(500).build();
         }
     }
-
-
     
-
-    // DB에 저장된 모든 책 조회
+    // ✅ DB에 저장된 모든 책 조회
     @GetMapping("/list")
     public List<Book> getAllBooks() throws Exception {
         return bookService.getAllBooks();
     }
 
-    // 특정 책 조회
+    // ✅ 특정 책 조회
     @GetMapping("/{title}")
     public Book getTitleBook(@PathVariable String title) throws Exception {
         return bookService.getTitleBook(title);
@@ -119,10 +123,15 @@ public class BookController {
     public ResponseEntity<List<Book>> getReadingList(@RequestHeader String authorization) {
         try {
             // 로그인된 사용자 확인
-            Login loginInfo = userService.checkToken(authorization);
+            Login loginInfo = userService.getLoginInfo(authorization);
             if (loginInfo == null) {
                 return ResponseEntity.status(401).body(null);
             }
+            
+            // ✅ 만료 시간 갱신 (사용자가 요청할 때마다 갱신)
+            long newExpTime = System.currentTimeMillis() + (30 * 60 * 1000);
+            userService.updateExpTime(authorization, newExpTime);
+            
             // 현재 로그인한 사용자의 `읽고 싶어요` 상태인 책 가져오기
             return ResponseEntity.ok(bookService.getReadingList(loginInfo.getEmail()));
         } catch (Exception e) {
@@ -130,14 +139,19 @@ public class BookController {
         }
     }
 
- // ✅ "읽고 싶어요" 책 목록 가져오기
+    // ✅ "읽고 싶어요" 책 목록 가져오기
     @GetMapping("/want-to-read")
     public ResponseEntity<List<Book>> getWantToReadBooks(@RequestHeader String authorization) {
         try {
-            Login loginInfo = userService.checkToken(authorization);
+            Login loginInfo = userService.getLoginInfo(authorization);
             if (loginInfo == null) {
                 return ResponseEntity.status(401).body(null);
             }
+            
+            // ✅ 만료 시간 갱신 (사용자가 요청할 때마다 갱신)
+            long newExpTime = System.currentTimeMillis() + (30 * 60 * 1000);
+            userService.updateExpTime(authorization, newExpTime);
+            
             return ResponseEntity.ok(bookService.getBooksByStatus(loginInfo.getEmail(), "읽고 싶어요"));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(null);
@@ -148,38 +162,52 @@ public class BookController {
     @GetMapping("/reading-now")
     public ResponseEntity<List<Book>> getReadingNowBooks(@RequestHeader String authorization) {
         try {
-            Login loginInfo = userService.checkToken(authorization);
+            Login loginInfo = userService.getLoginInfo(authorization);
             if (loginInfo == null) {
                 return ResponseEntity.status(401).body(null);
             }
+            
+            // ✅ 만료 시간 갱신 (사용자가 요청할 때마다 갱신)
+            long newExpTime = System.currentTimeMillis() + (30 * 60 * 1000);
+            userService.updateExpTime(authorization, newExpTime);
+            
             return ResponseEntity.ok(bookService.getBooksByStatus(loginInfo.getEmail(), "읽고 있어요"));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(null);
         }
     }
 
-    // "다 읽었어요" 책 목록 가져오기
+    // ✅ "다 읽었어요" 책 목록 가져오기
     @GetMapping("/reading-done")
     public ResponseEntity<List<Book>> getReadingDoneBooks(@RequestHeader String authorization) {
         try {
-            Login loginInfo = userService.checkToken(authorization);
+            Login loginInfo = userService.getLoginInfo(authorization);
             if (loginInfo == null) {
                 return ResponseEntity.status(401).body(null);
             }
+            
+            // ✅ 만료 시간 갱신 (사용자가 요청할 때마다 갱신)
+            long newExpTime = System.currentTimeMillis() + (30 * 60 * 1000);
+            userService.updateExpTime(authorization, newExpTime);
+            
             return ResponseEntity.ok(bookService.getBooksByStatus(loginInfo.getEmail(), "다 읽었어요"));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(null);
         }
     }
 
- // ✅ 책 상태 변경 (읽고 있어요 / 다 읽었어요)
+    // ✅ 책 상태 변경 (읽고 있어요 / 다 읽었어요)
     @PutMapping("/update-status")
     public ResponseEntity<String> updateBookStatus(@RequestHeader String authorization, @RequestBody Book book) {
         try {
-            Login loginInfo = userService.checkToken(authorization);
+            Login loginInfo = userService.getLoginInfo(authorization);
             if (loginInfo == null) {
                 return ResponseEntity.status(401).body("Unauthorized: 유효하지 않은 토큰");
             }
+            
+            // ✅ 만료 시간 갱신 (사용자가 요청할 때마다 갱신)
+            long newExpTime = System.currentTimeMillis() + (30 * 60 * 1000);
+            userService.updateExpTime(authorization, newExpTime);
 
             // 사용자의 책 상태 업데이트
             book.setEmail(loginInfo.getEmail());
@@ -190,9 +218,4 @@ public class BookController {
             return ResponseEntity.status(500).body("책 상태 업데이트 중 오류 발생: " + e.getMessage());
         }
     }
-
-    
-    
-    
-    
 }
