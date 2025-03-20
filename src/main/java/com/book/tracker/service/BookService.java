@@ -5,42 +5,43 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.book.tracker.dao.BookDao;
+import com.book.tracker.dao.LoginDao;
 import com.book.tracker.dto.Book;
 
 import java.util.List;
 
 @Service
 public class BookService {
+	 @Autowired
+	LoginDao loginDao;
 
     @Autowired
-    BookDao bookDao; // DAO 연결
+    BookDao bookDao; 
 
-    //  책 추가 (읽고 싶어요 상태로 저장)
     @Transactional
     public void insertBook(Book book) throws Exception {
-        // Java에서 book_id를 직접 계산
+       
         Integer nextBookId = bookDao.getNextBookIdByEmail(book.getEmail());
         book.setBook_id(nextBookId);
         
-        // book_id를 설정한 후 DB에 저장
+      
         bookDao.insertBook(book);
     }
-    //  모든 책 조회
+ 
     public List<Book> getAllBooks() throws Exception {
         return bookDao.getAllBooks();
     }
 
-    // 특정 책 조회
+ 
     public Book getTitleBook (String title) throws Exception {
         return bookDao.getTitleBook(title);
     }
 
 	public Book getBookById(int book_id) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	
-	// 읽고 싶어요 책 목록 가져오는 메서드 
+
 	public List<Book> getReadingList() throws Exception {
 		return bookDao.getReadingList();
 	}
@@ -62,5 +63,31 @@ public class BookService {
 		}
 	 public void updateBookStatus(Book book) {
 	        bookDao.updateBookStatus(book);
+	    }
+	 
+
+	 @Transactional
+	    public int deleteBook(String token, int book_id) throws Exception {
+	        System.out.println("BookService - 삭제 요청 실행: book_id=" + book_id);
+
+	     
+	        String email = loginDao.getUserEmailByToken(token);
+	        if (email == null || email.isEmpty()) {
+	            System.out.println("삭제 실패: 해당 토큰에 연결된 이메일 없음!");
+	            throw new IllegalArgumentException("유효하지 않은 사용자 토큰입니다.");
+	        }
+
+	        System.out.println("삭제할 사용자 이메일: " + email);
+
+	        // 📌 책 삭제 실행
+	        int rowsAffected = bookDao.deleteBook(email, book_id);
+	        if (rowsAffected == 0) {
+	            System.out.println("삭제 실패: 해당 book_id를 가진 책이 없음!");
+	            throw new IllegalArgumentException("삭제할 책을 찾을 수 없습니다.");
+	        }
+
+	        System.out.println("삭제 완료, 영향을 받은 행 수: " + rowsAffected);
+
+	        return rowsAffected; 
 	    }
 }
