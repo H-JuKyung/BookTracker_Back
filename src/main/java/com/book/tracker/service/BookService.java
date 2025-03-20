@@ -63,6 +63,4 @@ public class BookService {
 	 public void updateBookStatus(Book book) {
 	        bookDao.updateBookStatus(book);
 	    }
-
-
 }
