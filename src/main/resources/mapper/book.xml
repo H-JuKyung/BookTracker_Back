@@ -19,11 +19,11 @@
 
 <select id ="getAllBooks" resultType="Book">
 	 	select * from book 
-	</select>
+</select>
 	
-	<select id ="getTitleBook" parameterType ="String" resultType = "Book">
+<select id ="getTitleBook" parameterType ="String" resultType = "Book">
 	select * from book where title =#{title}
-	</select>
+</select>
 	
 <select id="getBookByEmailAndTitle" parameterType="map" resultType="Book">
     select * from book where email = #{email} and title = #{title} limit 1
@@ -45,6 +45,19 @@
 </update>
 
 
+
+<select id="countBooksByEmail" resultType="int">
+    SELECT COUNT(*) FROM book WHERE email = #{email}
+</select>
+
+
+<select id="getUserEmailByToken" parameterType="string" resultType="string">
+        SELECT email FROM login WHERE token = #{token}
+    </select>
+
+<delete id="deleteBook">
+    DELETE FROM book WHERE email = #{email} AND book_id = #{book_id}
+</delete>
 
 
 </mapper>
