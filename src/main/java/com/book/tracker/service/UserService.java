@@ -63,7 +63,7 @@ public class UserService {
 				String myToken = OpenCrypt.byteArrayToHex(originalHash);
 				
 				// 4️. 만료 시간(exp) 설정 (현재 시간 + 30분)
-                long expTime = System.currentTimeMillis() + (1 * 60 * 1000);
+                long expTime = System.currentTimeMillis() + (30 * 60 * 1000);
                 
 				// 5. login table에 token 저장
 				Login loginInfo = new Login(email, myToken, nickname, new Date(), expTime);
