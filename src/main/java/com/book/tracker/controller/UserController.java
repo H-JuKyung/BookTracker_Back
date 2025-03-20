@@ -38,7 +38,6 @@ public class UserController {
         }
 	}
 
-    // ✅ 사용자의 토큰이 만료되었는지 확인
 	@GetMapping("checkToken")
 	public Map<String, String> checkToken(@RequestHeader String authorization) {
 	    Map<String, String> responseMap = new HashMap<>();
@@ -54,15 +53,10 @@ public class UserController {
 	        if (loginInfo != null) {
 	            long currentTime = System.currentTimeMillis();
 	            
-	            System.out.println("🔍 현재 시간: " + currentTime + ", 토큰 만료 시간: " + loginInfo.getExp());
-
-	            // ✅ 만료 시간(exp)이 현재 시간보다 작다면 로그아웃 처리
 	            if (loginInfo.getExp() < currentTime) {
-	                System.out.println("❌ 토큰 만료 감지됨, 로그아웃 실행");
 	                
 	                userService.logout(authorization);
 
-	                // ✅ 토큰이 실제로 삭제되었는지 확인
 	                Login deletedToken = userService.getLoginInfo(authorization);
 	                if (deletedToken == null) {
 	                    System.out.println("✅ 만료된 토큰 정상적으로 삭제됨.");
@@ -70,13 +64,12 @@ public class UserController {
 	                    System.out.println("⚠️ 만료된 토큰 삭제 실패!");
 	                }
 
-	                responseMap.put("expired", "true"); // 만료됨
+	                responseMap.put("expired", "true"); 
 	            } else {
-	                responseMap.put("expired", "false"); // 유효함
+	                responseMap.put("expired", "false"); 
 	            }
 	        } else {
-	            System.out.println("⚠️ DB에서 해당 토큰 찾을 수 없음 (로그아웃 상태)");
-	            responseMap.put("expired", "true"); // DB에서 찾을 수 없음 (로그아웃 상태)
+	            responseMap.put("expired", "true"); 
 	        }
 	    } catch (Exception e) {
 	        e.printStackTrace();
@@ -85,7 +78,6 @@ public class UserController {
 	    return responseMap;
 	}
 	
-    // ✅ 요청할 때마다 exp(만료 시간) 갱신
     @PostMapping("updateLoginTime")
     public void updateLoginTime(@RequestHeader String authorization) {
         if (authorization == null) {
@@ -110,7 +102,6 @@ public class UserController {
 			Login loginInfo = userService.tokenLogin(u);
 			
 			if(loginInfo != null && loginInfo.getNickname() != null && loginInfo.getToken() != null) {
-	            // ✅ 현재 시간 + 30분을 만료 시간(exp)으로 설정
 	            long expTime = System.currentTimeMillis() + (30 * 60 * 1000);
                 loginInfo.setExp(expTime);
                 userService.updateExpTime(loginInfo.getToken(), expTime);
