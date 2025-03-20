@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.book.tracker.dao.GoalDao">
+
+    <select id="getGoalByEmail" resultType="Goal">
+        SELECT email, target_books AS targetBooks, current_books AS currentBooks, created_at AS createdAt, is_completed AS isCompleted
+        FROM goal 
+        WHERE email = #{email}
+    </select>
+
+    <insert id="insertGoal">
+        INSERT INTO goal (email, target_books, current_books, created_at, is_completed) 
+        VALUES (#{email}, #{targetBooks}, 0, NOW(), false)
+        ON DUPLICATE KEY UPDATE 
+            target_books = VALUES(target_books), 
+            current_books = 0,  
+            is_completed = false, 
+            updated_at = NOW();
+    </insert>
+
+    <delete id="deleteGoal">
+        DELETE FROM goal WHERE email = #{email}
+    </delete>
+
+    <update id="updateCurrentBooks">
+        UPDATE goal 
+        SET current_books = #{currentBooks}, updated_at = NOW() 
+        WHERE email = #{email}
+    </update>
+    
+    <update id="updateGoalTarget">
+    	UPDATE goal 
+    	SET target_books = #{targetBooks}, updated_at = NOW()
+    	WHERE email = #{email}
+	</update>
+    
+    <update id="updateGoalCompletion">
+        UPDATE goal 
+        SET is_completed = #{isCompleted}, updated_at = NOW()
+        WHERE email = #{email}
+    </update>
+
+</mapper>

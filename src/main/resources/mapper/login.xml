@@ -5,12 +5,14 @@
   
 <mapper namespace="com.book.tracker.dao.LoginDao">
   
-  <!-- ✅ 토큰으로 로그인 정보 조회 -->
   <select id="getLoginInfo" parameterType="String" resultType="Login">
   	select email, token, exp from login where token = #{token}
   </select>
   
-  <!-- ✅ 로그인 시 토큰 저장 -->
+  <select id="getUserEmailByToken" parameterType="string" resultType="string">
+    SELECT email FROM login WHERE token = #{token}
+  </select>
+  
   <insert id="insertToken" parameterType="Login">
   	insert into login (email, token, exp)
 	values (#{email}, #{token}, #{exp})
